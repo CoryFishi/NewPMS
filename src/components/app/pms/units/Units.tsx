@@ -9,6 +9,7 @@ import SliderButton from "@components/ui/SliderButton";
 import InputBox from "@components/ui/InputBox";
 import { useAuth } from "@context/AuthProvider";
 import { addEvent } from "@hooks/supabase";
+import { buildApiUrl, authHeaders } from "@hooks/opentech";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useCallback, useEffect, useState } from "react";
@@ -58,21 +59,10 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
   ).length;
 
   const handleTimeProfiles = useCallback(async () => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
     const config = {
       method: "get",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/timegroups`,
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/timegroups`),
+      headers: authHeaders(currentFacility),
     };
 
     axios(config)
@@ -84,22 +74,10 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
       });
   }, [currentFacility]);
   const handleAccessProfiles = useCallback(async () => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
-
     const config = {
       method: "get",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/accessprofiles`,
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/accessprofiles`),
+      headers: authHeaders(currentFacility),
     };
 
     axios(config)
@@ -111,22 +89,10 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
       });
   }, [currentFacility]);
   const handleUnits = useCallback(async () => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
-
     const config = {
       method: "get",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/units`,
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units`),
+      headers: authHeaders(currentFacility),
     };
 
     return axios(config)
@@ -146,22 +112,10 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
   }, [currentFacility]);
   const handleSmartLocks = useCallback(async () => {
     try {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (currentFacility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = currentFacility.environment;
-      }
-
       const response = await axios.get(
-        `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/smartlockstatus`,
+        buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/smartlockstatus`),
         {
-          headers: {
-            Authorization: "Bearer " + currentFacility?.token?.access_token,
-            accept: "application/json",
-            "api-version": "2.0",
-          },
+          headers: authHeaders(currentFacility),
         }
       );
       const smartLocks = response.data;
@@ -182,13 +136,6 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
   }, [currentFacility]);
   const moveIn = async (unit) => {
     const handleRent = async () => {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (currentFacility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = currentFacility.environment;
-      }
       const data = {
         timeGroupId: timeProfiles[0].id,
         accessProfileId: accessProfiles[0].id,
@@ -210,14 +157,8 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
 
       const config = {
         method: "post",
-        url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/visitors`,
-
-        headers: {
-          Authorization: "Bearer " + currentFacility?.token?.access_token,
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json-patch+json",
-        },
+        url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/visitors`),
+        headers: authHeaders(currentFacility),
         data: data,
       };
 
@@ -261,22 +202,10 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
   };
   const turnRented = async (unit) => {
     const handleRentalStatus = async () => {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (currentFacility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = currentFacility.environment;
-      }
       const config = {
         method: "post",
-        url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/units/${unit.id}/enable?suppressCommands=true`,
-        headers: {
-          Authorization: "Bearer " + currentFacility?.token?.access_token,
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json-patch+json",
-        },
+        url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units/${unit.id}/enable?suppressCommands=true`),
+        headers: authHeaders(currentFacility),
         data: "",
       };
       return axios(config)
@@ -314,23 +243,10 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
   };
   const moveOut = async (unit) => {
     const handleMoveOut = async () => {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (currentFacility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = currentFacility.environment;
-      }
-
       const config = {
         method: "post",
-        url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/units/${unit.id}/vacate`,
-        headers: {
-          Authorization: "Bearer " + currentFacility?.token?.access_token,
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json-patch+json",
-        },
+        url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units/${unit.id}/vacate`),
+        headers: authHeaders(currentFacility),
         data: "",
       };
 
@@ -369,22 +285,10 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
   };
   const turnDelinquent = async (unit) => {
     const handleRentalStatus = async () => {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (currentFacility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = currentFacility.environment;
-      }
       const config = {
         method: "post",
-        url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/units/${unit.id}/disable`,
-        headers: {
-          Authorization: "Bearer " + currentFacility?.token?.access_token,
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json-patch+json",
-        },
+        url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units/${unit.id}/disable`),
+        headers: authHeaders(currentFacility),
         data: "",
       };
       return axios(config)
@@ -422,23 +326,10 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
   };
   const deleteUnit = async (unit) => {
     const handleDelete = async () => {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (currentFacility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = currentFacility.environment;
-      }
-
       const config = {
         method: "post",
-        url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/units/${unit.id}/delete/vacant`,
-        headers: {
-          Authorization: "Bearer " + currentFacility?.token?.access_token,
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json-patch+json",
-        },
+        url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units/${unit.id}/delete/vacant`),
+        headers: authHeaders(currentFacility),
         data: "",
       };
 
@@ -475,22 +366,10 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
     if (unit.status === "Vacant") return;
     setSelectedUnit(unit);
     const handleVisitorFetch = async () => {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (currentFacility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = currentFacility.environment;
-      }
       const config = {
         method: "get",
-        url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/units/${unit.id}/visitors`,
-        headers: {
-          Authorization: "Bearer " + currentFacility?.token?.access_token,
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json-patch+json",
-        },
+        url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units/${unit.id}/visitors`),
+        headers: authHeaders(currentFacility),
         data: "",
       };
       return axios(config)

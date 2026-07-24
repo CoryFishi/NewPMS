@@ -2,6 +2,7 @@ import EditVisitorVisitorPage from "@views/pms/units/EditVisitorVisitorPage";
 import PaginationFooter from "@components/shared/PaginationFooter";
 import DataTable from "@components/shared/DataTable";
 import { addEvent } from "@hooks/supabase";
+import { buildApiUrl, authHeaders } from "@hooks/opentech";
 import { useAuth } from "@context/AuthProvider";
 import { MdEdit } from "react-icons/md";
 import { useState, useEffect, useCallback } from "react";
@@ -40,22 +41,10 @@ export default function EditVisitor({
   const [continousDelete, setContinousDelete] = useState(false);
 
   const handleTimeProfiles = useCallback(async () => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
-
     const config = {
       method: "get",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/timegroups`,
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/timegroups`),
+      headers: authHeaders(currentFacility),
     };
 
     axios(config)
@@ -67,22 +56,10 @@ export default function EditVisitor({
       });
   }, [currentFacility]);
   const handleAccessProfiles = useCallback(async () => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
-
     const config = {
       method: "get",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/accessprofiles`,
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/accessprofiles`),
+      headers: authHeaders(currentFacility),
     };
 
     axios(config)
@@ -95,13 +72,6 @@ export default function EditVisitor({
   }, [currentFacility]);
   const createTenant = () => {
     const handleRent = async () => {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (currentFacility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = currentFacility.environment;
-      }
       const data = {
         timeGroupId: timeProfiles[0].id,
         accessProfileId: accessProfiles[0].id,
@@ -123,14 +93,8 @@ export default function EditVisitor({
 
       const config = {
         method: "post",
-        url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/visitors`,
-
-        headers: {
-          Authorization: "Bearer " + currentFacility?.token?.access_token,
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json-patch+json",
-        },
+        url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/visitors`),
+        headers: authHeaders(currentFacility),
         data: data,
       };
 
@@ -161,23 +125,10 @@ export default function EditVisitor({
     }
   };
   const removeVisitor = async (visitorId) => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
     const config = {
       method: "post",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/visitors/${visitorId}/remove`,
-
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-        "Content-Type": "application/json-patch+json",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/visitors/${visitorId}/remove`),
+      headers: authHeaders(currentFacility),
     };
 
     return axios(config)
