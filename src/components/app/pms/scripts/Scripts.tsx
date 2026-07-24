@@ -6,6 +6,7 @@ import ScriptConfirmation from "@views/pms/scripts/ScriptConfirmation";
 import FillVacantModal, { FillVacantConfig } from "@views/pms/units/FillVacantModal";
 import GeneralButton from "@components/ui/GeneralButton";
 import { addEvent } from "@hooks/supabase";
+import { buildApiUrl, authHeaders } from "@hooks/opentech";
 
 export default function Scripts() {
   const { currentFacility, user } = useAuth();
@@ -19,13 +20,6 @@ export default function Scripts() {
 
   const importUnits = async (units) => {
     if (!units) return;
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
     const unitNumbersArray = units.split(",").flatMap((unit) => {
       unit = unit.trim();
       if (unit.includes("-")) {
@@ -73,13 +67,8 @@ export default function Scripts() {
       // API call
       const config = {
         method: "post",
-        url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/units`,
-        headers: {
-          Authorization: "Bearer " + currentFacility?.token?.access_token,
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json",
-        },
+        url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units`),
+        headers: authHeaders(currentFacility),
         data: data,
       };
       axios(config)
@@ -114,13 +103,6 @@ export default function Scripts() {
   const importUnitsWTenants = async (units) => {
     if (!units) return;
     const handleRent = async (unit) => {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (currentFacility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = currentFacility.environment;
-      }
       const data = {
         timeGroupId: 0,
         accessProfileId: 0,
@@ -142,14 +124,8 @@ export default function Scripts() {
 
       const config = {
         method: "post",
-        url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/visitors`,
-
-        headers: {
-          Authorization: "Bearer " + currentFacility?.token?.access_token,
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json-patch+json",
-        },
+        url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/visitors`),
+        headers: authHeaders(currentFacility, "application/json-patch+json"),
         data: data,
       };
 
@@ -168,13 +144,6 @@ export default function Scripts() {
           throw error;
         });
     };
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
     const unitNumbersArray = units.split(",").flatMap((unit) => {
       unit = unit.trim();
       if (unit.includes("-")) {
@@ -222,13 +191,8 @@ export default function Scripts() {
       // API call
       const config = {
         method: "post",
-        url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/units`,
-        headers: {
-          Authorization: "Bearer " + currentFacility?.token?.access_token,
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json",
-        },
+        url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units`),
+        headers: authHeaders(currentFacility),
         data: data,
       };
       axios(config)
@@ -262,31 +226,17 @@ export default function Scripts() {
     setIsTenantModalOpen(false);
   };
 
-  const getBaseUrl = () => {
-    let tokenStageKey = "";
-    let tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
-    return `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com`;
-  };
+  const getBaseUrl = () => buildApiUrl(currentFacility, "");
 
   const fillVacantUnits = async (config: FillVacantConfig) => {
     setIsFillVacantModalOpen(false);
     const baseUrl = getBaseUrl();
-    const headers = {
-      Authorization: "Bearer " + currentFacility?.token?.access_token,
-      accept: "application/json",
-      "api-version": "2.0",
-      "Content-Type": "application/json-patch+json",
-    };
+    const headers = authHeaders(currentFacility, "application/json-patch+json");
 
     let allUnits;
     try {
       const res = await axios.get(
-        `${baseUrl}/facilities/${currentFacility.id}/units`,
+        `${baseUrl}facilities/${currentFacility.id}/units`,
         { headers }
       );
       allUnits = res.data;
@@ -328,7 +278,7 @@ export default function Scripts() {
         };
         try {
           const res = await axios.post(
-            `${baseUrl}/facilities/${currentFacility.id}/visitors`,
+            `${baseUrl}facilities/${currentFacility.id}/visitors`,
             data,
             { headers }
           );
@@ -356,17 +306,12 @@ export default function Scripts() {
   const cleanupTempTenants = async () => {
     setIsCleanupModalOpen(false);
     const baseUrl = getBaseUrl();
-    const headers = {
-      Authorization: "Bearer " + currentFacility?.token?.access_token,
-      accept: "application/json",
-      "api-version": "2.0",
-      "Content-Type": "application/json-patch+json",
-    };
+    const headers = authHeaders(currentFacility, "application/json-patch+json");
 
     let allVisitors;
     try {
       const res = await axios.get(
-        `${baseUrl}/facilities/${currentFacility.id}/visitors`,
+        `${baseUrl}facilities/${currentFacility.id}/visitors`,
         { headers }
       );
       allVisitors = res.data;
@@ -390,7 +335,7 @@ export default function Scripts() {
       tempTenants.map(async (visitor) => {
         try {
           await axios.post(
-            `${baseUrl}/facilities/${currentFacility.id}/units/${visitor.unitId}/vacate`,
+            `${baseUrl}facilities/${currentFacility.id}/units/${visitor.unitId}/vacate`,
             "",
             { headers }
           );

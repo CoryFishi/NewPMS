@@ -11,6 +11,7 @@ import { supabase } from "@lib/supabaseClient";
 import { FaExternalLinkAlt } from "react-icons/fa";
 import TableButton from "@components/ui/TableButton";
 import InputBox from "@components/ui/InputBox";
+import { buildAuthUrl } from "@hooks/opentech";
 
 export default function Favorites({ setCurrentFacilityName } : { setCurrentFacilityName: any; }) {
   const [facilities, setFacilities] = useState<any[]>([]);
@@ -91,13 +92,6 @@ export default function Favorites({ setCurrentFacilityName } : { setCurrentFacil
       return { data: updatedFacility };
     }
 
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (facility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = facility.environment;
-    }
     const data = qs.stringify({
       grant_type: "password",
       username: facility.api,
@@ -107,7 +101,7 @@ export default function Favorites({ setCurrentFacilityName } : { setCurrentFacil
     });
     const config = {
       method: "post",
-      url: `https://auth.${tokenStageKey}insomniaccia${tokenEnvKey}.com/auth/token`,
+      url: buildAuthUrl(facility),
       headers: {
         accept: "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
