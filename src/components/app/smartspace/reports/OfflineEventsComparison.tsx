@@ -10,6 +10,7 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
+import { buildApiUrl, authHeaders } from "@hooks/opentech";
 
 export default function OfflineEventsComparison({ selectedFacilities } : { selectedFacilities: any[] }) {
   const [dayValue, setDayValue] = useState<number>(7);
@@ -18,22 +19,18 @@ export default function OfflineEventsComparison({ selectedFacilities } : { selec
   const [smartlockEventsData, setSmartlockEventsData] = useState<any[]>([]);
   const fetchSmartLockEvents = useCallback(async (facility: any) => {
     try {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (facility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = facility.environment;
-      }
-
       const response = await axios.get(
-        `https://accessevent.${tokenStageKey}insomniaccia${tokenEnvKey}.com/combinedevents/facilities/${facility.id}?uq=&vq=&etq=5&etq=6&minDate=${pastDayValue}&maxDate=${currentTime}&hideMetadata=true`,
+        buildApiUrl(
+          facility,
+          `/combinedevents/facilities/${facility.id}?uq=&vq=&etq=5&etq=6&minDate=${pastDayValue}&maxDate=${currentTime}&hideMetadata=true`,
+          "accessevent"
+        ),
         {
-          headers: {
-            Authorization: "Bearer " + facility.bearer,
-            accept: "application/json",
-            "api-version": "3.0",
-          },
+          headers: authHeaders(
+            { ...facility, token: { access_token: facility.bearer } },
+            "application/json",
+            "3.0"
+          ),
         }
       );
       const smartLockEvents = await response.data;

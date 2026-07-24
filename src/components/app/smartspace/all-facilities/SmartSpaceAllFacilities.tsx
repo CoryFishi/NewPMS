@@ -17,7 +17,7 @@ import {
   RiCheckboxBlankCircleLine,
 } from "react-icons/ri";
 import InputBox from "@components/ui/InputBox";
-import { getEnvironmentName } from "@hooks/opentech";
+import { getEnvironmentName, buildAuthUrl, buildApiUrl, authHeaders } from "@hooks/opentech";
 
 export default function SmartSpaceAllFacilitiesPage() {
   const [facilities, setFacilities] = useState([]);
@@ -64,14 +64,6 @@ export default function SmartSpaceAllFacilitiesPage() {
   };
 
   const handleLogin = async (facility) => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (facility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = facility.environment;
-    }
-
     const data = qs.stringify({
       grant_type: "password",
       username: facility.api,
@@ -82,7 +74,7 @@ export default function SmartSpaceAllFacilitiesPage() {
 
     const config = {
       method: "post",
-      url: `https://auth.${tokenStageKey}insomniaccia${tokenEnvKey}.com/auth/token`,
+      url: buildAuthUrl(facility),
       headers: {
         accept: "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
@@ -114,19 +106,14 @@ export default function SmartSpaceAllFacilitiesPage() {
         const bearer = cachedToken
           ? { access_token: cachedToken }
           : await handleLogin(facility);
-        const tokenStageKey =
-          facility.environment === "staging" ? "cia-stg-1.aws." : "";
-        const tokenEnvKey =
-          facility.environment === "staging" ? "" : facility.environment;
 
         const res = await axios.get(
-          `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/statuslist`,
+          buildApiUrl(facility, "/facilities/statuslist"),
           {
-            headers: {
-              Authorization: "Bearer " + bearer?.access_token,
-              accept: "application/json",
-              "api-version": "2.0",
-            },
+            headers: authHeaders({
+              ...facility,
+              token: { access_token: bearer?.access_token },
+            }),
           }
         );
 

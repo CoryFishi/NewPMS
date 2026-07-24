@@ -7,6 +7,7 @@ import DataTable from "@components/shared/DataTable";
 import DetailModal from "@components/shared/DetailModal";
 import { IoIosWarning } from "react-icons/io";
 import { RiErrorWarningFill } from "react-icons/ri";
+import { buildApiUrl, authHeaders } from "@hooks/opentech";
 
 export default function AllEdgeRoutersReport({
   selectedFacilities,
@@ -27,22 +28,10 @@ export default function AllEdgeRoutersReport({
 
   const fetchEdgeRouters = async (facility: any) => {
     try {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (facility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = facility.environment;
-      }
-
       const response = await axios.get(
-        `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${facility.id}/edgerouterstatus`,
+        buildApiUrl(facility, `/facilities/${facility.id}/edgerouterstatus`),
         {
-          headers: {
-            Authorization: "Bearer " + facility.bearer,
-            accept: "application/json",
-            "api-version": "2.0",
-          },
+          headers: authHeaders({ ...facility, token: { access_token: facility.bearer } }),
         }
       );
       const edgeRouters = response.data;

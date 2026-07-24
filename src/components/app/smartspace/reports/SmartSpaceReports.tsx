@@ -12,6 +12,7 @@ import { FaLock } from "react-icons/fa";
 import OfflineEventsComparison from "@views/smartspace/reports/OfflineEventsComparison";
 import InputBox from "@components/ui/InputBox";
 import AllSmartMotionReport from "@views/smartspace/reports/AllSmartMotionReport";
+import { buildAuthUrl } from "@hooks/opentech";
 
 export default function SmartSpaceReports() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -72,13 +73,6 @@ export default function SmartSpaceReports() {
   // Function to get a bearer token for each facility
   const fetchBearerToken = async (facility) => {
     try {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (facility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = facility.environment;
-      }
       const data = {
         grant_type: "password",
         username: facility.api,
@@ -88,7 +82,7 @@ export default function SmartSpaceReports() {
       };
 
       const response = await axios.post(
-        `https://auth.${tokenStageKey}insomniaccia${tokenEnvKey}.com/auth/token`,
+        buildAuthUrl(facility),
         data,
         {
           headers: {
