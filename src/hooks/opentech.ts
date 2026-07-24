@@ -35,12 +35,12 @@ export function buildApiUrl(
   return `https://${service}.${tokenStageKey}insomniaccia${tokenEnvKey}.com${suffix}`;
 }
 
-export function authHeaders(f: Facility) {
+export function authHeaders(f: Facility, contentType: string = "application/json") {
   return {
     Authorization: "Bearer " + f.token?.access_token,
     accept: "application/json",
     "api-version": "2.0",
-    "Content-Type": "application/json",
+    "Content-Type": contentType,
   };
 }
 

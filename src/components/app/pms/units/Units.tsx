@@ -158,7 +158,7 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
       const config = {
         method: "post",
         url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/visitors`),
-        headers: authHeaders(currentFacility),
+        headers: authHeaders(currentFacility, "application/json-patch+json"),
         data: data,
       };
 
@@ -205,7 +205,7 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
       const config = {
         method: "post",
         url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units/${unit.id}/enable?suppressCommands=true`),
-        headers: authHeaders(currentFacility),
+        headers: authHeaders(currentFacility, "application/json-patch+json"),
         data: "",
       };
       return axios(config)
@@ -246,7 +246,7 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
       const config = {
         method: "post",
         url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units/${unit.id}/vacate`),
-        headers: authHeaders(currentFacility),
+        headers: authHeaders(currentFacility, "application/json-patch+json"),
         data: "",
       };
 
@@ -288,7 +288,7 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
       const config = {
         method: "post",
         url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units/${unit.id}/disable`),
-        headers: authHeaders(currentFacility),
+        headers: authHeaders(currentFacility, "application/json-patch+json"),
         data: "",
       };
       return axios(config)
@@ -329,7 +329,7 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
       const config = {
         method: "post",
         url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units/${unit.id}/delete/vacant`),
-        headers: authHeaders(currentFacility),
+        headers: authHeaders(currentFacility, "application/json-patch+json"),
         data: "",
       };
 
@@ -369,7 +369,7 @@ export default function Units({ currentFacilityName } : { currentFacilityName: s
       const config = {
         method: "get",
         url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units/${unit.id}/visitors`),
-        headers: authHeaders(currentFacility),
+        headers: authHeaders(currentFacility, "application/json-patch+json"),
         data: "",
       };
       return axios(config)

@@ -102,7 +102,7 @@ export default function CreateVisitorUnitPage({
     const config = {
       method: "post",
       url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/visitors`),
-      headers: authHeaders(currentFacility),
+      headers: authHeaders(currentFacility, "application/json-patch+json"),
       data: data,
     };
     toast.promise(

@@ -104,7 +104,7 @@ export default function EditVisitorVisitorPage({
     const config = {
       method: "post",
       url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/visitors/${visitor.id}/update`),
-      headers: authHeaders(currentFacility),
+      headers: authHeaders(currentFacility, "application/json-patch+json"),
       data: data,
     };
     toast.promise(

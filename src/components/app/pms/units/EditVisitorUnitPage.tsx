@@ -94,7 +94,7 @@ export default function EditVisitor({
       const config = {
         method: "post",
         url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/visitors`),
-        headers: authHeaders(currentFacility),
+        headers: authHeaders(currentFacility, "application/json-patch+json"),
         data: data,
       };
 
@@ -128,7 +128,7 @@ export default function EditVisitor({
     const config = {
       method: "post",
       url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/visitors/${visitorId}/remove`),
-      headers: authHeaders(currentFacility),
+      headers: authHeaders(currentFacility, "application/json-patch+json"),
     };
 
     return axios(config)
