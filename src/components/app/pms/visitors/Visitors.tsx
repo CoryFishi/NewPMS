@@ -13,6 +13,7 @@ import InputBox from "@components/ui/InputBox";
 import GeneralButton from "@components/ui/GeneralButton";
 import TableButton from "@components/ui/TableButton";
 import { addEvent } from "@hooks/supabase";
+import { buildApiUrl, authHeaders } from "@hooks/opentech";
 
 export default function Visitors({ currentFacilityName }) {
   const [visitors, setVisitors] = useState<any[]>([]);
@@ -75,22 +76,10 @@ export default function Visitors({ currentFacilityName }) {
     setFilteredVisitors(sorted);
   };
   const handleVisitors = useCallback(async () => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
-
     const config = {
       method: "get",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/visitors`,
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/visitors`),
+      headers: authHeaders(currentFacility),
     };
 
     return axios(config)
@@ -110,22 +99,10 @@ export default function Visitors({ currentFacilityName }) {
   }, [currentFacility]);
   const handleSmartLocks = useCallback(async () => {
     try {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (currentFacility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = currentFacility.environment;
-      }
-
       const response = await axios.get(
-        `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/smartlockstatus`,
+        buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/smartlockstatus`),
         {
-          headers: {
-            Authorization: "Bearer " + currentFacility?.token?.access_token,
-            accept: "application/json",
-            "api-version": "2.0",
-          },
+          headers: authHeaders(currentFacility),
         }
       );
       const smartLocks = response.data;
@@ -146,24 +123,14 @@ export default function Visitors({ currentFacilityName }) {
   }, [currentFacility]);
   const moveOutVisitor = async (visitor: any) => {
     const handleDelete = async () => {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (currentFacility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = currentFacility.environment;
-      }
-
       const config = {
         method: "post",
-        url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/units/${visitor.unitId}/vacate?suppressCommands=true`,
+        url: buildApiUrl(
+          currentFacility,
+          `/facilities/${currentFacility.id}/units/${visitor.unitId}/vacate?suppressCommands=true`
+        ),
 
-        headers: {
-          Authorization: "Bearer " + currentFacility?.token?.access_token,
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json-patch+json",
-        },
+        headers: authHeaders(currentFacility, "application/json-patch+json"),
         data: "",
       };
 
@@ -196,24 +163,14 @@ export default function Visitors({ currentFacilityName }) {
   };
   const deleteVisitor = async (visitor: any) => {
     const handleDelete = async () => {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (currentFacility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = currentFacility.environment;
-      }
-
       const config = {
         method: "post",
-        url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/visitors/${visitor.id}/remove`,
+        url: buildApiUrl(
+          currentFacility,
+          `/facilities/${currentFacility.id}/visitors/${visitor.id}/remove`
+        ),
 
-        headers: {
-          Authorization: "Bearer " + currentFacility?.token?.access_token,
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json-patch+json",
-        },
+        headers: authHeaders(currentFacility, "application/json-patch+json"),
         data: "",
       };
 
