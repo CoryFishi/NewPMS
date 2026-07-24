@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import toast from "react-hot-toast";
 import { FaEdit } from "react-icons/fa";
 import qs from "qs";
+import { buildAuthUrl } from "@hooks/opentech";
 
 export default function AddToken({
   setIsAddTokenFacilityModalOpen,
@@ -16,14 +17,6 @@ export default function AddToken({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const handleLogin = async () => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = environment;
-    }
-
     const data = qs.stringify({
       grant_type: "password",
       username: api,
@@ -34,7 +27,7 @@ export default function AddToken({
 
     const config = {
       method: "post",
-      url: `https://auth.${tokenStageKey}insomniaccia${tokenEnvKey}.com/auth/token`,
+      url: buildAuthUrl({ api, apiSecret, client, clientSecret, environment }),
       headers: {
         accept: "application/json",
         "Content-Type": "application/x-www-form-urlencoded",

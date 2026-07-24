@@ -12,7 +12,7 @@ import axios from "axios";
 import { useAuth } from "@context/AuthProvider";
 import { supabase } from "@lib/supabaseClient";
 import { FaExternalLinkAlt } from "react-icons/fa";
-import { handleSingleLogin } from "@hooks/opentech";
+import { handleSingleLogin, buildApiUrl, authHeaders } from "@hooks/opentech";
 import { RiAdminFill } from "react-icons/ri";
 
 export default function PMSDashboardLayout({
@@ -122,21 +122,10 @@ export default function PMSDashboardLayout({
 
   const handleFacilityInfo = useCallback(async () => {
     if (Object.keys(currentFacility).length === 0) return;
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
     const config = {
       method: "get",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}`,
-      headers: {
-        accept: "application/json",
-        Authorization: "Bearer " + currentFacility.token.access_token,
-        "api-version": "2.0",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}`),
+      headers: authHeaders(currentFacility),
     };
 
     axios(config)
