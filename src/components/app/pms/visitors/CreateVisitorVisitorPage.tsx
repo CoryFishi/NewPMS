@@ -7,6 +7,7 @@ import ModalContainer from "@components/ui/ModalContainer";
 import SelectOption from "@components/ui/SelectOption";
 import InputBox from "@components/ui/InputBox";
 import { addEvent } from "@hooks/supabase";
+import { buildApiUrl, authHeaders } from "@hooks/opentech";
 
 export default function CreateVisitorVisitor({
   setIsCreateVisitorModalOpen,
@@ -35,22 +36,10 @@ export default function CreateVisitorVisitor({
   ];
 
   const handleUnits = useCallback(async () => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
-
     const config = {
       method: "get",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/units`,
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units`),
+      headers: authHeaders(currentFacility),
     };
 
     return axios(config)
@@ -68,22 +57,10 @@ export default function CreateVisitorVisitor({
       });
   }, [currentFacility]);
   const handleTimeProfiles = useCallback(async () => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
-
     const config = {
       method: "get",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/timegroups`,
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/timegroups`),
+      headers: authHeaders(currentFacility),
     };
 
     axios(config)
@@ -95,22 +72,10 @@ export default function CreateVisitorVisitor({
       });
   }, [currentFacility]);
   const handleAccessProfiles = useCallback(async () => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
-
     const config = {
       method: "get",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/accessprofiles`,
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/accessprofiles`),
+      headers: authHeaders(currentFacility),
     };
 
     axios(config)
@@ -148,13 +113,6 @@ export default function CreateVisitorVisitor({
     if (newVisitor.email && !/\S+@\S+\.\S+/.test(newVisitor.email)) {
       toast.error("Email address is invalid");
       return;
-    }
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
     }
     let data = {};
     if (newVisitor.type === "Tenant") {
@@ -216,13 +174,8 @@ export default function CreateVisitorVisitor({
 
     const config = {
       method: "post",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/visitors`,
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-        "Content-Type": "application/json-patch+json",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/visitors`),
+      headers: authHeaders(currentFacility, "application/json-patch+json"),
       data: data,
     };
     toast.promise(

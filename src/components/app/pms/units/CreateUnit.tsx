@@ -4,6 +4,7 @@ import { useState } from "react";
 import { IoIosCreate } from "react-icons/io";
 import { useAuth } from "@context/AuthProvider";
 import { addEvent } from "@hooks/supabase";
+import { buildApiUrl, authHeaders } from "@hooks/opentech";
 import ModalButton from "@components/ui/ModalButton";
 import ModalContainer from "@components/ui/ModalContainer";
 import InputBox from "@components/ui/InputBox";
@@ -18,13 +19,6 @@ export default function CreateUnit({ setIsUnitModalOpen, setUnits }) {
     if (!newUnitNumber) {
       setIsUnitModalOpen(false);
       return;
-    }
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
     }
     const unitNumbersArray = newUnitNumber.split(",").flatMap((unit) => {
       unit = unit.trim();
@@ -73,13 +67,8 @@ export default function CreateUnit({ setIsUnitModalOpen, setUnits }) {
       // API call
       const config = {
         method: "post",
-        url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/units`,
-        headers: {
-          Authorization: "Bearer " + currentFacility?.token?.access_token,
-          accept: "application/json",
-          "api-version": "2.0",
-          "Content-Type": "application/json",
-        },
+        url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/units`),
+        headers: authHeaders(currentFacility),
         data: data,
       };
       try {

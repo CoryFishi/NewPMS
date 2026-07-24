@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { IoIosCreate } from "react-icons/io";
 import { useAuth } from "@context/AuthProvider";
 import { addEvent } from "@hooks/supabase";
+import { buildApiUrl, authHeaders } from "@hooks/opentech";
 import ModalContainer from "@components/ui/ModalContainer";
 import InputBox from "@components/ui/InputBox";
 import SelectOption from "@components/ui/SelectOption";
@@ -28,22 +29,10 @@ export default function CreateVisitorUnitPage({
   const [accessProfiles, setAccessProfiles] = useState({});
   // API call handler to get time profiles
   const handleTimeProfiles = useCallback(async () => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
-
     const config = {
       method: "get",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/timegroups`,
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/timegroups`),
+      headers: authHeaders(currentFacility),
     };
 
     axios(config)
@@ -56,22 +45,10 @@ export default function CreateVisitorUnitPage({
   }, [currentFacility]);
   // API call handler to get access profiles
   const handleAccessProfiles = useCallback(async () => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
-
     const config = {
       method: "get",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/accessprofiles`,
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/accessprofiles`),
+      headers: authHeaders(currentFacility),
     };
 
     axios(config)
@@ -105,14 +82,6 @@ export default function CreateVisitorUnitPage({
       toast.error("Email address is invalid");
       return;
     }
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (currentFacility.environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = currentFacility.environment;
-    }
-
     const data = {
       timeGroupId: newVisitor.timeProfile,
       accessProfileId: newVisitor.accessProfile,
@@ -132,13 +101,8 @@ export default function CreateVisitorUnitPage({
     };
     const config = {
       method: "post",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${currentFacility.id}/visitors`,
-      headers: {
-        Authorization: "Bearer " + currentFacility?.token?.access_token,
-        accept: "application/json",
-        "api-version": "2.0",
-        "Content-Type": "application/json-patch+json",
-      },
+      url: buildApiUrl(currentFacility, `/facilities/${currentFacility.id}/visitors`),
+      headers: authHeaders(currentFacility, "application/json-patch+json"),
       data: data,
     };
     toast.promise(

@@ -6,6 +6,7 @@ import { FaCheckCircle } from "react-icons/fa";
 import { RiErrorWarningFill } from "react-icons/ri";
 import DataTable from "@components/shared/DataTable";
 import DetailModal from "@components/shared/DetailModal";
+import { buildApiUrl, authHeaders } from "@hooks/opentech";
 
 export default function OnlineTimeReport({ selectedFacilities, searchQuery } : { selectedFacilities: any[]; searchQuery: string }) {
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -75,22 +76,18 @@ export default function OnlineTimeReport({ selectedFacilities, searchQuery } : {
   };
   const fetchEvents = useCallback(async (facility: any) => {
     try {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (facility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = facility.environment;
-      }
-
       const response = await axios.get(
-        `https://accessevent.${tokenStageKey}insomniaccia${tokenEnvKey}.com/combinedevents/facilities/${facility.id}?uq=&vq=&etq=5&etq=6&minDate=${pastDayValue}&maxDate=${currentTime}&hideMetadata=true`,
+        buildApiUrl(
+          facility,
+          `/combinedevents/facilities/${facility.id}?uq=&vq=&etq=5&etq=6&minDate=${pastDayValue}&maxDate=${currentTime}&hideMetadata=true`,
+          "accessevent"
+        ),
         {
-          headers: {
-            Authorization: "Bearer " + facility.bearer,
-            accept: "application/json",
-            "api-version": "3.0",
-          },
+          headers: authHeaders(
+            { ...facility, token: { access_token: facility.bearer } },
+            "application/json",
+            "3.0"
+          ),
         }
       );
       const events = await response.data;

@@ -7,6 +7,7 @@ import DetailModal from "@components/shared/DetailModal";
 import GeneralButton from "@components/ui/GeneralButton";
 import ModalContainer from "@components/ui/ModalContainer";
 import { MdEventNote } from "react-icons/md";
+import { buildApiUrl, authHeaders } from "@hooks/opentech";
 
 export default function EventsReport({ selectedFacilities, searchQuery } : { selectedFacilities: any[]; searchQuery: string }) {
   const [filteredSmartLockEvents, setFilteredSmartLockEvents] = useState<any[]>([]);
@@ -28,14 +29,6 @@ export default function EventsReport({ selectedFacilities, searchQuery } : { sel
 
   const fetchEventsForFacility = useCallback(async (facility: any) => {
     try {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (facility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = facility.environment;
-      }
-
       const gatewayPlatform =
         "&gtq=" +
         selectedEvents
@@ -53,17 +46,21 @@ export default function EventsReport({ selectedFacilities, searchQuery } : { sel
           .join("&etq=");
 
       const response = await axios.get(
-        `https://accessevent.${tokenStageKey}insomniaccia${tokenEnvKey}.com/combinedevents/facilities/${
-          facility.id
-        }?uq=&vq=${gatewayPlatform !== "&gtq=" ? gatewayPlatform : ""}${
-          edgePlatform !== "&etq=" ? edgePlatform : ""
-        }&minDate=${pastDayValue}&maxDate=${currentTime}&hideMetadata=true`,
+        buildApiUrl(
+          facility,
+          `/combinedevents/facilities/${
+            facility.id
+          }?uq=&vq=${gatewayPlatform !== "&gtq=" ? gatewayPlatform : ""}${
+            edgePlatform !== "&etq=" ? edgePlatform : ""
+          }&minDate=${pastDayValue}&maxDate=${currentTime}&hideMetadata=true`,
+          "accessevent"
+        ),
         {
-          headers: {
-            Authorization: "Bearer " + facility.bearer,
-            accept: "application/json",
-            "api-version": "3.0",
-          },
+          headers: authHeaders(
+            { ...facility, token: { access_token: facility.bearer } },
+            "application/json",
+            "3.0"
+          ),
         }
       );
       const smartLockEvents = response.data;
@@ -77,22 +74,13 @@ export default function EventsReport({ selectedFacilities, searchQuery } : { sel
 
   const fetchEventTypes = useCallback(async () => {
     try {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (selectedFacilities[0].environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = selectedFacilities[0].environment;
-      }
-
       const response = await axios.get(
-        `https://accessevent.${tokenStageKey}insomniaccia${tokenEnvKey}.com/combinedevents/types`,
+        buildApiUrl(selectedFacilities[0], "/combinedevents/types", "accessevent"),
         {
-          headers: {
-            Authorization: "Bearer " + selectedFacilities[0].bearer,
-            accept: "application/json",
-            "api-version": "2.0",
-          },
+          headers: authHeaders({
+            ...selectedFacilities[0],
+            token: { access_token: selectedFacilities[0].bearer },
+          }),
         }
       );
       const eventTypes = response.data;

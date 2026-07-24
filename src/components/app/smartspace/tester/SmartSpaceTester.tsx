@@ -8,6 +8,7 @@ import DetailModal from "@components/shared/DetailModal";
 import { RiErrorWarningFill } from "react-icons/ri";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { buildAuthUrl, buildApiUrl, authHeaders } from "@hooks/opentech";
 
 export default function SmartSpaceTester() {
   const { selectedTokens } = useAuth();
@@ -81,13 +82,6 @@ export default function SmartSpaceTester() {
   };
   const fetchBearerToken = async (facility: { environment: string; api: string; apiSecret: string; client: string; clientSecret: string; name: string }) => {
     try {
-      var tokenStageKey = "";
-      var tokenEnvKey = "";
-      if (facility.environment === "staging") {
-        tokenStageKey = "cia-stg-1.aws.";
-      } else {
-        tokenEnvKey = facility.environment;
-      }
       const data = {
         grant_type: "password",
         username: facility.api,
@@ -97,7 +91,7 @@ export default function SmartSpaceTester() {
       };
 
       const response = await axios.post(
-        `https://auth.${tokenStageKey}insomniaccia${tokenEnvKey}.com/auth/token`,
+        buildAuthUrl(facility),
         data,
         {
           headers: {
@@ -118,19 +112,12 @@ export default function SmartSpaceTester() {
   const fetchInitialSmartMotionData = useCallback(async (facility: any) => {
     const bearer = await fetchBearerToken(facility);
     if (!bearer) return;
-    const { id, environment } = facility;
-    const tokenPrefix =
-      environment === "staging" ? "cia-stg-1.aws." : "";
-    const tokenSuffix = environment === "staging" ? "" : environment;
+    const { id } = facility;
     try {
       const response = await axios.get(
-        `https://accesscontrol.${tokenPrefix}insomniaccia${tokenSuffix}.com/facilities/${id}/smartmotionstatus`,
+        buildApiUrl(facility, `/facilities/${id}/smartmotionstatus`),
         {
-          headers: {
-            Authorization: `Bearer ${bearer}`,
-            accept: "application/json",
-            "api-version": "2.0",
-          },
+          headers: authHeaders({ ...facility, token: { access_token: bearer } }),
         }
       );
       const data = response.data;
@@ -158,19 +145,12 @@ export default function SmartSpaceTester() {
   const fetchNewSmartMotionData = useCallback(async (facility: any) => {
     const bearer = await fetchBearerToken(facility);
     if (!bearer) return;
-    const { id, environment } = facility;
-    const tokenPrefix =
-      environment === "staging" ? "cia-stg-1.aws." : "";
-    const tokenSuffix = environment === "staging" ? "" : environment;
+    const { id } = facility;
     try {
       const response = await axios.get(
-        `https://accesscontrol.${tokenPrefix}insomniaccia${tokenSuffix}.com/facilities/${id}/smartmotionstatus`,
+        buildApiUrl(facility, `/facilities/${id}/smartmotionstatus`),
         {
-          headers: {
-            Authorization: `Bearer ${bearer}`,
-            accept: "application/json",
-            "api-version": "2.0",
-          },
+          headers: authHeaders({ ...facility, token: { access_token: bearer } }),
         }
       );
       const data = response.data;
@@ -205,22 +185,22 @@ export default function SmartSpaceTester() {
   const fetchNewSmartMotionEventData = useCallback(async (facility: any) => {
     const bearer = await fetchBearerToken(facility);
     if (!bearer) return new Set();
-    const { environment } = facility;
-    const tokenPrefix =
-      environment === "staging" ? "cia-stg-1.aws." : "";
-    const tokenSuffix = environment === "staging" ? "" : environment;
     try {
       const now = Math.floor(Date.now() / 1000);
       const twoMinutesAgo = now - 120;
 
       const response = await axios.get(
-        `https://accessevent.${tokenPrefix}insomniaccia${tokenSuffix}.com/combinedevents/facilities/${facility.id}?uq=&vq=&etq=27&etq=28&minDate=${twoMinutesAgo}&maxDate=${now}&hideMetadata=true`,
+        buildApiUrl(
+          facility,
+          `/combinedevents/facilities/${facility.id}?uq=&vq=&etq=27&etq=28&minDate=${twoMinutesAgo}&maxDate=${now}&hideMetadata=true`,
+          "accessevent"
+        ),
         {
-          headers: {
-            Authorization: `Bearer ${bearer}`,
-            accept: "application/json",
-            "api-version": "3.0",
-          },
+          headers: authHeaders(
+            { ...facility, token: { access_token: bearer } },
+            "application/json",
+            "3.0"
+          ),
         }
       );
       const data = response.data;

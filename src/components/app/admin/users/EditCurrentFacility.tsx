@@ -3,6 +3,7 @@ import { useState, ChangeEvent } from "react";
 import toast from "react-hot-toast";
 import { FaEdit } from "react-icons/fa";
 import qs from "qs";
+import { buildAuthUrl, buildApiUrl, authHeaders } from "@hooks/opentech";
 
 export default function EditCurrentFacility({
   setIsEditCurrentFacilityModalOpen,
@@ -29,14 +30,6 @@ export default function EditCurrentFacility({
   );
 
   const handleLogin = async () => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = environment;
-    }
-
     const data = qs.stringify({
       grant_type: "password",
       username: api,
@@ -47,7 +40,7 @@ export default function EditCurrentFacility({
 
     const config = {
       method: "post",
-      url: `https://auth.${tokenStageKey}insomniaccia${tokenEnvKey}.com/auth/token`,
+      url: buildAuthUrl({ api, apiSecret, client, clientSecret, environment }),
       headers: {
         accept: "application/json",
         "Content-Type": "application/x-www-form-urlencoded",
@@ -71,21 +64,11 @@ export default function EditCurrentFacility({
   };
 
   const handleFacilityInfo = async (bearerToken) => {
-    var tokenStageKey = "";
-    var tokenEnvKey = "";
-    if (environment === "staging") {
-      tokenStageKey = "cia-stg-1.aws.";
-    } else {
-      tokenEnvKey = environment;
-    }
+    const facility = { api, apiSecret, client, clientSecret, environment, token: bearerToken };
     const config = {
       method: "get",
-      url: `https://accesscontrol.${tokenStageKey}insomniaccia${tokenEnvKey}.com/facilities/${id}`,
-      headers: {
-        accept: "application/json",
-        Authorization: "Bearer " + bearerToken.access_token,
-        "api-version": "2.0",
-      },
+      url: buildApiUrl(facility, `/facilities/${id}`),
+      headers: authHeaders(facility),
     };
 
     axios(config)

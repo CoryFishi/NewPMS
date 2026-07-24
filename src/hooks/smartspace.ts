@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useQueries } from "@tanstack/react-query";
-import { handleSingleLogin } from "@hooks/opentech";
+import { handleSingleLogin, buildApiUrl, authHeaders } from "@hooks/opentech";
 
 export const FACILITY_QUERY_KEY = "smartspace-facility";
 
@@ -27,12 +27,6 @@ async function withFacilitySlot<T>(task: () => Promise<T>): Promise<T> {
   }
 }
 
-function apiBase(environment: string) {
-  const stageKey = environment === "staging" ? "cia-stg-1.aws." : "";
-  const envKey = environment === "staging" ? "" : environment;
-  return `https://accesscontrol.${stageKey}insomniaccia${envKey}.com`;
-}
-
 export async function fetchFacilityStatus(
   facility: any,
   // eslint-disable-next-line no-unused-vars
@@ -48,15 +42,10 @@ export async function fetchFacilityStatus(
     bearer = login.token.access_token;
   }
 
-  const headers = {
-    Authorization: `Bearer ${bearer}`,
-    accept: "application/json",
-    "api-version": "2.0",
-  };
-  const base = apiBase(facility.environment);
+  const headers = authHeaders({ ...facility, token: { access_token: bearer } });
   const get = (path: string) =>
     axios
-      .get(`${base}${path}`, { headers, timeout: REQUEST_TIMEOUT_MS })
+      .get(buildApiUrl(facility, path), { headers, timeout: REQUEST_TIMEOUT_MS })
       .then((res) => res.data);
 
   const failedSections: string[] = [];

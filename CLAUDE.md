@@ -241,7 +241,16 @@ const tokenEnvKey   = facility.environment === "staging" ? "" : facility.environ
 | `GET` | `/facilities/{id}/timegroups` | Time groups |
 | `GET` | `/facilities/{id}/actiongroups/manual` | Manual action groups |
 
-Helper in `@hooks/opentech`: `getEnvironmentName(facility)` → human-readable string.
+Helpers in `@hooks/opentech` (use these instead of hand-building URLs/headers):
+
+| Helper | Purpose |
+|---|---|
+| `buildAuthUrl(facility)` | Auth token URL (`https://auth.…/auth/token`) |
+| `buildApiUrl(facility, path, service?)` | API URL. `service` defaults to `"accesscontrol"`; pass `"accessevent"` for `/combinedevents/…` endpoints. `path` keeps its leading `/` and any interpolations. |
+| `authHeaders(facility, contentType?, apiVersion?)` | Bearer header object. `contentType` defaults to `"application/json"` (pass `"application/json-patch+json"` for the write endpoints that require it); `apiVersion` defaults to `"2.0"` (pass `"3.0"` for the `accessevent`/combined-events calls that require it). |
+| `getEnvironmentName(facility)` | Human-readable environment string |
+
+`Facility` is the exported type for the credential/facility shape. Auth POSTs keep their own `application/x-www-form-urlencoded` headers — do not route them through `authHeaders`. Portal (`portal.…`) deep-links are not API calls and are not built with these helpers.
 
 ---
 
@@ -535,7 +544,7 @@ toast.promise(asyncFn(), {        // asyncFn() — must call it, not pass refere
 
 5. **`supabaseAdmin` for admin pages** — always use `supabaseAdmin` (service role) in admin pages that need to read/write other users' data. Regular `supabase` client is RLS-restricted to the current user.
 
-6. **API URL construction is repeated** — the `tokenStageKey`/`tokenEnvKey` pattern appears in many files. It is not abstracted into a shared utility yet. Replicate the existing pattern when adding new API calls.
+6. **API URL/header construction is centralized** — the old copy-pasted `tokenStageKey`/`tokenEnvKey` pattern is now abstracted into `buildAuthUrl`/`buildApiUrl`/`authHeaders` in `@hooks/opentech` (see the OpenTech API section). Use those helpers for any new API call instead of hand-building URLs or header objects.
 
 7. **Pagination reset on filter** — always call `setCurrentPage(1)` when `searchQuery` changes, otherwise filtered results may show an empty page.
 
